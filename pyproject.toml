@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amagi-docleak"
+version = "0.1.0"
+description = "Pre-send check for Word, Excel, PowerPoint and PDF files: finds tracked changes, comments, hidden sheets and slides, speaker notes, author metadata, file paths and fake black-box redactions, then writes a cleaned copy."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "AmagiLabs (Amagisolutionsgroup, Inc.)", email = "dev@amagisolutionsgroup.com" }]
+requires-python = ">=3.9"
+dependencies = [
+    "lxml>=4.9",
+    "pikepdf>=8.0",
+    "pdfminer.six>=20231228",
+    "pypdfium2>=4.20",
+    "pillow>=9.0",
+]
+keywords = ["metadata", "redaction", "docx", "xlsx", "pptx", "pdf", "tracked-changes", "legal", "privacy", "document-security", "claude-code"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Legal Industry",
+    "Topic :: Security",
+    "Topic :: Office/Business",
+]
+
+[project.urls]
+Homepage = "https://github.com/amagilabs/amagi-docleak"
+Source = "https://github.com/amagilabs/amagi-docleak"
+Issues = "https://github.com/amagilabs/amagi-docleak/issues"
+
+[project.scripts]
+amagi-docleak = "amagi_docleak.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "python-docx>=1.1", "openpyxl>=3.1", "python-pptx>=0.6.23"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
