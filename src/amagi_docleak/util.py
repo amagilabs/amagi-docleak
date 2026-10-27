@@ -30,12 +30,12 @@ def mask(text):
     return '"%s" (%d chars)' % (shown, len(text))
 
 
-_SECRET = re.compile("(.*?)", re.S)
+_SECRET = re.compile("\x01(.*?)\x02", re.S)
 
 
 def secret(text):
     """Mark text the author meant to hide; the report masks it unless --reveal is given."""
-    return "%s" % " ".join(text.split())
+    return "\x01%s\x02" % " ".join(text.split())
 
 
 def render(s, reveal=False):

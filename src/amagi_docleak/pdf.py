@@ -290,6 +290,7 @@ def xmp_values(pdf):
 def check_metadata(pdf, findings, paths):
     personal, custom, context = [], [], []
     for key, value in (pdf.docinfo.items() if "/Info" in pdf.trailer else []):
+        key = str(key)
         v = _str(value)
         if not v:
             continue
@@ -325,7 +326,7 @@ def check_metadata(pdf, findings, paths):
 
 def _action_kind(action):
     try:
-        s = action.get("/S")
+        s = str(action.get("/S", ""))
     except Exception:
         return None
     if s in ("/JavaScript", "/Launch"):
@@ -385,12 +386,35 @@ def check_actions(pdf, findings, paths):
 EOF_RE = re.compile(rb"startxref\s+\d+\s+%%EOF")
 
 
+OBJ_RE = re.compile(rb"(?<![0-9])\d+\s+\d+\s+obj\b")
+XREF_STREAM_RE = re.compile(rb"/Type\s*/XRef\b")
+
+
+def _real_update(section):
+    """An appended section counts as a revision only if it changes objects.
+
+    Word saves "hybrid" files whose second section holds nothing but a cross-reference
+    table or stream; that is not an earlier version of anything.
+    """
+    for m in OBJ_RE.finditer(section):
+        head = section[m.end():m.end() + 400]
+        if not XREF_STREAM_RE.search(head.split(b"stream", 1)[0]):
+            return True
+    return False
+
+
 def revisions(data, linearized):
     """Byte offsets where each saved revision ends (the last one is the current file)."""
     ends = [m.end() for m in EOF_RE.finditer(data)]
     if linearized and len(ends) > 1:
         ends = ends[1:]
-    return ends
+    kept = ends[:1]
+    for prev, end in zip(ends, ends[1:]):
+        if _real_update(data[prev:end]):
+            kept.append(end)
+        elif kept:
+            kept[-1] = end
+    return kept
 
 
 def _lines(data):
@@ -474,7 +498,7 @@ def _check(pdf, data, findings):
         for annot in page.obj.get("/Annots", []):
             if not isinstance(annot, pikepdf.Dictionary):
                 continue
-            st = annot.get("/Subtype")
+            st = str(annot.get("/Subtype", ""))
             if st == "/Redact":
                 redact_marks.append((num, [apply(ctm, b) for b in quad_boxes(annot)]))
             elif st == "/FileAttachment":
