@@ -93,28 +93,45 @@ UNREADABLE = 1.6  # contrast ratio below this: the text cannot be read on its ba
 
 # ---- file paths ---------------------------------------------------------------------------
 
+# Folder names may contain spaces, so a path in running text would swallow the words after it.
+# A segment stops before "name.ext " and the last segment ends right after its extension.
+_NOT_END = r"(?!\.[A-Za-z0-9]{1,5}(?:\s|$))"
+_SEG = r"(?:" + _NOT_END + r"[^<>\"|?*\r\n\t\\/:])"
+_LAST = _SEG + r"*(?:\.[A-Za-z0-9]{1,5}(?=\s|$|[^A-Za-z0-9]))?"
+
 _PATH_RES = [
-    re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:(?:\\{1,2}|/)(?:[^<>\"|?*\r\n\t\\/:]+(?:\\{1,2}|/))+[^<>\"|?*\r\n\t\\/:]*"),
-    re.compile(r"\\{2,4}[A-Za-z0-9._$-]+(?:\\{1,2}[^<>\"|?*\r\n\t\\:]+)+"),
+    re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:(?:\\{1,2}|/)(?:" + _SEG + r"+(?:\\{1,2}|/))+" + _LAST),
+    re.compile(r"\\{2,4}[A-Za-z0-9._$-]+(?:\\{1,2}" + _SEG + r"+)*\\{1,2}" + _LAST),
     re.compile(r"file:/{2,3}[^\s<>\"']+", re.IGNORECASE),
     re.compile(r"(?<![A-Za-z0-9.])/(?:Users|home)/[A-Za-z0-9._-]+(?:/[^\s<>\"'/]+)*"),
 ]
 
 
+def _unescape(path):
+    """Undo doubled backslashes (paths stored in JSON or code) but keep a UNC path's leading pair."""
+    unc = path.startswith("\\\\")
+    body = path.lstrip("\\") if unc else path
+    if "\\\\" in body or path.startswith("\\\\\\\\"):
+        body = body.replace("\\\\", "\\")
+    return ("\\\\" if unc else "") + body
+
+
 def find_paths(text):
-    out = []
+    found = []
     for rx in _PATH_RES:
         for m in rx.finditer(text):
-            value = m.group(0).rstrip(" .,;)")
-            value = value.replace("\\\\", "\\") if not value.startswith("\\\\\\") else value
-            if len(value) > 4:
-                out.append(value)
-    # a match from one pattern can contain another (file:///C:/...), keep the longest
-    out.sort(key=len, reverse=True)
-    kept = []
-    for v in out:
-        if not any(v in k for k in kept):
-            kept.append(v)
+            found.append((m.start(), m.end()))
+    # a match from one pattern can sit inside another (file:///C:/...); keep the outer one
+    found.sort(key=lambda s: s[0] - s[1])
+    spans, kept = [], []
+    for start, end in found:
+        if any(a <= start and end <= b for a, b in spans):
+            continue
+        spans.append((start, end))
+    for start, end in sorted(spans):
+        value = _unescape(text[start:end].rstrip(" .,;)"))
+        if len(value) > 4 and value not in kept:
+            kept.append(value)
     return kept
 
 

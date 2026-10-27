@@ -562,6 +562,13 @@ def _check(pdf, data, findings):
         files = {}
     embedded = ["%s (%s KB)" % (name, max(1, len(fs.get_file().read_bytes()) // 1024)) for name, fs in files.items()]
     embedded += attach
+    # PDF 2.0 associated files can carry a file without listing it in the attachments panel
+    for where, holder in [("document", pdf.Root)] + [("page %d" % n, p.obj) for n, p in enumerate(pdf.pages, 1)]:
+        for fs in holder.get("/AF", []):
+            if isinstance(fs, pikepdf.Dictionary) and "/EF" in fs:
+                name = _filespec_name(fs) or "attachment"
+                if name not in files:
+                    embedded.append("%s (associated file, %s)" % (name, where))
     if embedded:
         findings.append(Finding("embedded-files", plural(len(embedded), "attached file") + ": "
                                 + join_names([e.split(" (")[0] for e in embedded]), embedded[:10]))

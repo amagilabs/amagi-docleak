@@ -684,6 +684,10 @@ def clean_pdf(src, dst, keep, unhide):
                 del names["/EmbeddedFiles"]
             if "/Collection" in root:
                 del root["/Collection"]
+            # PDF 2.0 associated files point at the same file specs; drop them so nothing still refers to the data
+            for holder in [root] + [page.obj for page in pdf.pages]:
+                if "/AF" in holder:
+                    del holder["/AF"]
             n += removed["attachments"]
             if n:
                 actions.append("removed " + plural(n, "attached file"))

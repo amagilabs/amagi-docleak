@@ -94,7 +94,7 @@ CHECKS = {c.id: c for c in [
     Check("thumbnail", "info", "docx xlsx pptx",
           "Saved preview thumbnail of the first page",
           "removes it"),
-    Check("unsupported-format", "warn", "doc xls ppt",
+    Check("unsupported-format", "fail", "doc xls ppt",
           "Legacy binary Office files this tool cannot read",
           "not cleaned; save as .docx/.xlsx/.pptx first"),
     Check("unreadable", "fail", "all",
