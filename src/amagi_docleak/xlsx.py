@@ -221,9 +221,10 @@ def check(pkg, findings):
         if rows_with_data or cols_with_data:
             bits = []
             if rows_with_data:
-                bits.append("rows " + ", ".join(str(a) if a == b else "%d-%d" % (a, b) for a, b in ranges(rows_with_data)))
+                bits.append(("row " if len(rows_with_data) == 1 else "rows ")
+                            + ", ".join(str(a) if a == b else "%d-%d" % (a, b) for a, b in ranges(rows_with_data)))
             if cols_with_data:
-                bits.append("columns " + ", ".join(col_letters(a) if a == b else "%s-%s" % (col_letters(a), col_letters(b))
+                bits.append(("column " if len(cols_with_data) == 1 else "columns ") + ", ".join(col_letters(a) if a == b else "%s-%s" % (col_letters(a), col_letters(b))
                                                    for a, b in ranges(cols_with_data)))
             rowcol.append("%s: %s (%s)" % (name, " and ".join(bits), plural(n_cells, "cell") + " with values"))
 

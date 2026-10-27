@@ -635,7 +635,7 @@ def clean_pdf(src, dst, keep, unhide):
                             gone.append(k[1:])
                         del info[key]
                 if gone:
-                    actions.append("cleared document info fields (%s)" % ", ".join(gone))
+                    actions.append("cleared document info fields (%s)" % ", ".join(sorted(gone)))
             if "author-metadata" not in keep and "/Metadata" in root:
                 del root["/Metadata"]
                 actions.append("removed the XMP metadata packet")

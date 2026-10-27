@@ -46,7 +46,7 @@ def text(reports, fail_on="fail", reveal=False, detail=3, color=False, out=sys.s
         out.write("%s checked: %d failed, %d passed\n" % (plural(len(reports), "file"), failed, len(reports) - failed))
     if failed and detail >= 0 and any(f.check in CHECKS and f.secret for r in reports for f in r.findings) \
             and not reveal:
-        out.write("Hidden text is masked. Add --reveal to print it.\n")
+        out.write("Blacked-out and covered text is masked. Add --reveal to print it.\n")
 
 
 def as_json(reports, fail_on="fail", reveal=False):
