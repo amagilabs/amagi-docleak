@@ -192,8 +192,8 @@ def make_xlsx(path):
     for r in rows:
         ws.append(r)
     ws.column_dimensions["D"].hidden = True
-    ws["B6"].fill = PatternFill("solid", fgColor="000000")
-    ws["B6"].font = Font(color="000000")
+    ws["B6"].fill = PatternFill("solid", fgColor="FF000000")
+    ws["B6"].font = Font(color="FF000000")
     ws["B7"].number_format = ";;;"
     ws.append(())
     ws.append(("Old demand", 450000, "superseded 2026-08-30", ""))

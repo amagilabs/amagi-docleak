@@ -124,9 +124,8 @@ class Workbook:
         for f in (fills if fills is not None else []):
             pf = f.find(q("x:patternFill"))
             if pf is not None and pf.get("patternType") == "solid":
-                fg = pf.find(q("x:fgColor"))
-                # a solid fill with no color is drawn in the automatic color, which is black
-                self.fills.append(BLACK if fg is None else (self.color(fg) or WHITE))
+                # Excel draws a solid fill with no fgColor as no fill at all
+                self.fills.append(self.color(pf.find(q("x:fgColor"))) or WHITE)
             else:
                 self.fills.append(None)
         xfs = root.find(q("x:cellXfs"))
