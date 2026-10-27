@@ -246,25 +246,29 @@ PIVOT_RELS = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
               'pivotCacheRecords" Target="pivotCacheRecords1.xml"/></Relationships>')
 
 
+PV_DEF = "pivotCacheDefinition1.xml"
+PV_REC = "pivotCacheRecords1.xml"
+
+
 def _add_pivot_cache(path):
     with zipfile.ZipFile(path) as z:
         rels = z.read("xl/_rels/workbook.xml.rels").decode()
         types = z.read("[Content_Types].xml").decode()
     rels = rels.replace("</Relationships>",
                         '<Relationship Id="rIdPv1" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
-                        'relationships/pivotCacheDefinition" Target="pivotCache/pivotCacheDefinition1.xml"/>'
-                        "</Relationships>")
+                        'relationships/pivotCacheDefinition" Target="pivotCache/%s"/>'
+                        "</Relationships>" % PV_DEF)
     ct = "application/vnd.openxmlformats-officedocument.spreadsheetml."
     types = types.replace("</Types>",
-                          '<Override PartName="/xl/pivotCache/pivotCacheDefinition1.xml" ContentType="%s'
-                          'pivotCacheDefinition+xml"/><Override PartName="/xl/pivotCache/pivotCacheRecords1.xml" '
-                          'ContentType="%spivotCacheRecords+xml"/></Types>' % (ct, ct))
+                          '<Override PartName="/xl/pivotCache/%s" ContentType="%s'
+                          'pivotCacheDefinition+xml"/><Override PartName="/xl/pivotCache/%s" '
+                          'ContentType="%spivotCacheRecords+xml"/></Types>' % (PV_DEF, ct, PV_REC, ct))
     patch_zip(path, {
         "xl/_rels/workbook.xml.rels": rels,
         "[Content_Types].xml": types,
-        "xl/pivotCache/pivotCacheDefinition1.xml": PIVOT_DEF,
-        "xl/pivotCache/_rels/pivotCacheDefinition1.xml.rels": PIVOT_RELS,
-        "xl/pivotCache/pivotCacheRecords1.xml": PIVOT_REC,
+        "xl/pivotCache/" + PV_DEF: PIVOT_DEF,
+        "xl/pivotCache/_rels/" + PV_DEF + ".rels": PIVOT_RELS,
+        "xl/pivotCache/" + PV_REC: PIVOT_REC,
     })
 
 
@@ -280,8 +284,8 @@ def test_xlsx_pivot_cache_found_and_dropped(tmp_path):
     assert "pivot-cache" not in check_ids(check_file(str(dst)))
     with zipfile.ZipFile(dst) as z:
         names = z.namelist()
-        definition = z.read("xl/pivotCache/pivotCacheDefinition1.xml").decode()
-    assert "xl/pivotCache/pivotCacheRecords1.xml" not in names
+        definition = z.read("xl/pivotCache/" + PV_DEF).decode()
+    assert "xl/pivotCache/" + PV_REC not in names
     assert 'saveData="0"' in definition
     assert "Lee Sample" not in zip_text(dst)
 

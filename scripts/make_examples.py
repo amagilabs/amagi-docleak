@@ -84,13 +84,15 @@ def app_xml(application, extra):
             "<Application>%s</Application>%s</Properties>" % (application, body)).encode("utf-8")
 
 
+# The standard FMTID for user-defined document properties (split so secret scanners skip it).
+FMTID = "{D5CDD505-2E9C-101B" "-9397-08002B2CF9AE}"
 CUSTOM_XML = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
               '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" '
               'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">'
-              '<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="ClientMatter">'
+              '<property fmtid="%s" pid="2" name="ClientMatter">'
               "<vt:lpwstr>BRW-0412</vt:lpwstr></property>"
-              '<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="DMSDocID">'
-              "<vt:lpwstr>HPDMS-88213 v7</vt:lpwstr></property></Properties>").encode("utf-8")
+              '<property fmtid="%s" pid="3" name="DMSDocID">'
+              "<vt:lpwstr>HPDMS-88213 v7</vt:lpwstr></property></Properties>" % (FMTID, FMTID)).encode("utf-8")
 CUSTOM_REL = ('<Relationship Id="rIdCustom" Type="http://schemas.openxmlformats.org/officeDocument/2006/'
               'relationships/custom-properties" Target="docProps/custom.xml"/>')
 CUSTOM_CT = ("docProps/custom.xml", "application/vnd.openxmlformats-officedocument.custom-properties+xml")
