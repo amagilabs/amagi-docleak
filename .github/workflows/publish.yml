@@ -1,13 +1,8 @@
 name: Publish to PyPI
 
-# Manual runs only for now. PyPI has no trusted publisher configured for
-# amagi-docleak yet, so a release-triggered run fails with "invalid-publisher".
-# Releases are uploaded with twine until the trusted publisher is added on
-# pypi.org (owner amagilabs, repo amagi-docleak, workflow publish.yml,
-# environment pypi). Then restore the trigger:
-#   release:
-#     types: [published]
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
